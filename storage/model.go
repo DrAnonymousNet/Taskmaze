@@ -1,58 +1,80 @@
 package storage
 
 import (
-	"errors"
+	"encoding/binary"
 	"fmt"
 	"time"
+
+	"github.com/boltdb/bolt"
 )
 
-
 type Task struct {
-	ID int
+	ID        int
 	CreatedAt time.Time
-	Title string
-	Deadline time.Time
-	Priority string
-	RemindMe time.Time
-	Done bool
+	Title     string
+	Deadline  time.Time
+	Priority  string
+	RemindMe  time.Time
+	Done      bool
 }
 
-func CreatNewTask(title string, deadline time.Time, priority string, remindMe time.Time) Task {
+func (t *Task) serialize() []byte {
+	return []byte(fmt.Sprintf("%d|%s|%s|%s|%s|%t", t.ID, t.CreatedAt, t.Title, t.Deadline, t.Priority, t.Done))
+}
+
+func (t *Task) deserialize(data []byte) error {
+	_, err := fmt.Sscanf(string(data), "%d|%s|%s|%s|%s|%t", &t.ID, &t.CreatedAt, &t.Title, &t.Deadline, &t.Priority, &t.Done)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func CreatNewTask(title string, deadline time.Time, priority string, remindMe time.Time) *Task {
 	task := Task{
 
 		CreatedAt: time.Now(),
-		Title: title,
-		Deadline: deadline,
-		Priority: priority,
-		RemindMe: remindMe,
-		Done: false,
+		Title:     title,
+		Deadline:  deadline,
+		Priority:  priority,
+		RemindMe:  remindMe,
+		Done:      false,
 	}
-	return task
+	return &task
 }
 
-func AddTaskToDB(task *Task) int {
-	TaskDB.mu.Lock()
-	defer TaskDB.mu.Unlock()
-	nextID := len(*TaskDB.GlobalTasksMap)
-	fmt.Println(nextID, "Next ID")
-	(*TaskDB.GlobalTasksMap)[nextID] = *task
-	return nextID
-}
-
-func GetTaskByID(id int) (Task, error) {
-	TaskDB.mu.Lock()
-	defer TaskDB.mu.Unlock()
-	task, ok := (*TaskDB.GlobalTasksMap)[id]
-	if!ok {
-		return Task{}, errors.New("Task not found")
+func AddTaskToDB(task *Task) (int, error) {
+	MyDB.mu.Lock()
+	defer MyDB.mu.Unlock()
+	err := MyDB.DB.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("Tasks"))
+		id, _ := b.NextSequence()
+		task.ID = int(id)
+		idBytes := make([]byte, 8)
+		binary.BigEndian.PutUint64(idBytes, uint64(id))
+		b.Put(idBytes, task.serialize())  
+		return nil
+	})
+	if err != nil {
+		return -1, fmt.Errorf("error adding task to db: %w", err)
 	}
-	return task, nil
+	return task.ID, nil
 }
 
-func DeleteTask(id int) {
-	TaskDB.mu.Lock()
-	defer TaskDB.mu.Unlock()
-	delete(*TaskDB.GlobalTasksMap, id)
-}
 
-	
+
+// func GetTaskByID(id int) (Task, error) {
+// 	TaskDB.mu.Lock()
+// 	defer TaskDB.mu.Unlock()
+// 	task, ok := (*TaskDB.TaskDB)[id]
+// 	if !ok {
+// 		return Task{}, errors.New("Task not found")
+// 	}
+// 	return task, nil
+// }
+
+// func DeleteTask(id int) {
+// 	TaskDB.mu.Lock()
+// 	defer TaskDB.mu.Unlock()
+// 	delete(*TaskDB.TaskDB, id)
+// }

@@ -1,8 +1,48 @@
 package actions
 
+import (
+	"fmt"
+	"time"
 
-func Create(title string, priority string, due_date string, remind_me_by string) {
+	naturaldate "github.com/DrAnonymousNet/taskmaze/parser"
+	"github.com/DrAnonymousNet/taskmaze/storage"
+	"github.com/DrAnonymousNet/taskmaze/utils/validators"
+)
+
+
+
+func Create(title string, priority string, deadline string, remindMe string) (int, error) {
+	var (
+		deadlineTime time.Time
+		remindMeTime time.Time
+		err error
+	)
+	base := time.Now()
+
+
+	if deadline != "" {
+		deadlineTime, err = naturaldate.Parse(deadline, base)
+		if err != nil {
+			return -1 , fmt.Errorf("error parsing deadline: %w", err)
+		}
+		fmt.Println(deadlineTime)
+	}
+	if remindMe != "" {
+		remindMeTime, err = naturaldate.Parse(remindMe, base, naturaldate.WithDirection(naturaldate.Future))
+		if err != nil {
+			return -1,  fmt.Errorf("error parsing remind me: %w", err)
+		}
+		fmt.Println(remindMeTime)
+	}
+
+
+	if valid, err := validators.ValidateCreateArgs(title, deadlineTime, priority, remindMeTime); !valid {
+		return -1, fmt.Errorf("error validating arguments: %w", err)
+	}
 	
+	task := storage.CreatNewTask(title, deadlineTime, priority, remindMeTime)
+	id, err := storage.AddTaskToDB(task)	
+	return id, err
 }
 
 // For the due date, valid values include:
