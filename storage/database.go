@@ -14,8 +14,8 @@ type TaskDB struct {
 
 var MyDB *TaskDB
 
-func InitDB() (*TaskDB, error) {
-	db, err := bolt.Open("my.db", 0600, nil)
+func InitDB(dbName string) (*TaskDB, error) {
+	db, err := bolt.Open(dbName, 0600, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -26,6 +26,9 @@ func InitDB() (*TaskDB, error) {
 		}
 		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("error initializing db: %w", err)
+	}
 
 	MyDB = &TaskDB{DB: db}
 	return MyDB, nil

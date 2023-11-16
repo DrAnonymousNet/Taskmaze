@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	storage.InitDB()
+	storage.InitDB("my.db")
 	cmd.RootCmd.Execute()
 
 }

@@ -1,7 +1,10 @@
 package storage
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -34,36 +37,51 @@ func (t *Task) serialize() []byte {
 	remindMe := t.RemindMe.Format("2006-01-02T15:04:05")
 	createdAt := t.CreatedAt.Format("2006-01-02T15:04:05")
 
-	return []byte(fmt.Sprintf("%d %s %s %s %s %s %t", t.ID, createdAt, t.Title, deadline, remindMe, t.Priority, t.Done))
+	return []byte(fmt.Sprintf("%d|%s|%s|%s|%s|%s|%t", t.ID, createdAt, t.Title, deadline, remindMe, t.Priority, t.Done))
 
 }
-
 func (t *Task) deserialize(data []byte) error {
-	var (
-		deadline  string
-		remindMe  string
-		createdAt string
-	)
-	_, err := fmt.Sscanf(string(data), "%d %s %s %s %s %s %t", &t.ID, &createdAt, &t.Title, &deadline, &remindMe, &t.Priority, &t.Done)
-	if err != nil {
-		return fmt.Errorf("error deserializing task: %w", err)
+	parts := bytes.Split(data, []byte{'|'})
+	if len(parts) != 7 {
+		return errors.New("invalid task data")
 	}
-	t.Deadline, err = time.Parse("2006-01-02T15:04:05", deadline)
+
+	id, err := strconv.Atoi(string(parts[0]))
 	if err != nil {
-		return fmt.Errorf("error parsing deadline: %w", err)
+		return fmt.Errorf("error parsing ID: %w", err)
 	}
-	t.RemindMe, err = time.Parse("2006-01-02T15:04:05", remindMe)
-	if err != nil {
-		return fmt.Errorf("error parsing remind me: %w", err)
-	}
-	t.CreatedAt, err = time.Parse("2006-01-02T15:04:05", createdAt)
+	t.ID = id
+
+	createdAt, err := time.Parse("2006-01-02T15:04:05", string(parts[1]))
 	if err != nil {
 		return fmt.Errorf("error parsing created at: %w", err)
 	}
+	t.CreatedAt = createdAt
+
+	t.Title = string(parts[2])
+
+	deadline, err := time.Parse("2006-01-02T15:04:05", string(parts[3]))
+	if err != nil {
+		return fmt.Errorf("error parsing deadline: %w", err)
+	}
+	t.Deadline = deadline
+
+	remindMe, err := time.Parse("2006-01-02T15:04:05", string(parts[4]))
+	if err != nil {
+		return fmt.Errorf("error parsing remind me: %w", err)
+	}
+	t.RemindMe = remindMe
+
+	t.Priority = string(parts[5])
+
+	done, err := strconv.ParseBool(string(parts[6]))
+	if err != nil {
+		return fmt.Errorf("error parsing done: %w", err)
+	}
+	t.Done = done
 
 	return nil
 }
-
 // func GetTaskByID(id int) (Task, error) {
 // 	TaskDB.mu.Lock()
 // 	defer TaskDB.mu.Unlock()
