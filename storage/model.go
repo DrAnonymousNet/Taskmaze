@@ -2,44 +2,47 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"time"
 )
 
 
 type Task struct {
+	ID int
 	CreatedAt time.Time
 	Title string
-	DueDate string
+	Deadline time.Time
 	Priority string
-	Time string
-	Reminder string
+	RemindMe time.Time
 	Done bool
 }
 
-func CreatNewTask(title string, dueDate string, priority string, time string, reminder string) Task {
+func CreatNewTask(title string, deadline time.Time, priority string, remindMe time.Time) Task {
 	task := Task{
+
+		CreatedAt: time.Now(),
 		Title: title,
-		DueDate: dueDate,
+		Deadline: deadline,
 		Priority: priority,
-		Time: time,
-		Reminder: reminder,
+		RemindMe: remindMe,
 		Done: false,
 	}
 	return task
 }
 
-func AddTaskToDB(task Task) int {
+func AddTaskToDB(task *Task) int {
 	TaskDB.mu.Lock()
 	defer TaskDB.mu.Unlock()
-	nextID := len(TaskDB.GlobalTasksMap)
-	TaskDB.GlobalTasksMap[nextID] = task
+	nextID := len(*TaskDB.GlobalTasksMap)
+	fmt.Println(nextID, "Next ID")
+	(*TaskDB.GlobalTasksMap)[nextID] = *task
 	return nextID
 }
 
 func GetTaskByID(id int) (Task, error) {
 	TaskDB.mu.Lock()
 	defer TaskDB.mu.Unlock()
-	task, ok := TaskDB.GlobalTasksMap[id]
+	task, ok := (*TaskDB.GlobalTasksMap)[id]
 	if!ok {
 		return Task{}, errors.New("Task not found")
 	}
@@ -49,7 +52,7 @@ func GetTaskByID(id int) (Task, error) {
 func DeleteTask(id int) {
 	TaskDB.mu.Lock()
 	defer TaskDB.mu.Unlock()
-	delete(TaskDB.GlobalTasksMap, id)
+	delete(*TaskDB.GlobalTasksMap, id)
 }
 
 	
