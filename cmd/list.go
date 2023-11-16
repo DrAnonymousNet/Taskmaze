@@ -1,9 +1,8 @@
 package cmd
 
 import (
+	"github.com/DrAnonymousNet/taskmaze/utils/actions"
 	"github.com/spf13/cobra"
-
-	"github.com/DrAnonymousNet/taskmaze/actions"
 )
 
 var (
@@ -38,5 +37,5 @@ func init() {
 	listTaskCmd.Flags().BoolVarP(&dueThisMonthFlag, "due-this-month", "", false, "List tasks due this month")
 	listTaskCmd.Flags().StringVarP(&orderFlag, "order", "r", "", "Order tasks by priority, deadline, created, updated")
 	listTaskCmd.MarkFlagsMutuallyExclusive([]string{"done", "not-done"}...)
-	rootCmd.AddCommand(listTaskCmd)
+	RootCmd.AddCommand(listTaskCmd)
 }

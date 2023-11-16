@@ -1,9 +1,8 @@
 package cmd
 
 import (
+	"github.com/DrAnonymousNet/taskmaze/utils/actions"
 	"github.com/spf13/cobra"
-
-	"github.com/DrAnonymousNet/taskmaze/actions"
 )
 
 var retrieveTaskCmd = &cobra.Command{
@@ -18,5 +17,5 @@ var retrieveTaskCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(retrieveTaskCmd)
+	RootCmd.AddCommand(retrieveTaskCmd)
 }
