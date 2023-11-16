@@ -1,9 +1,13 @@
 package storage
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 
 type Task struct {
+	CreatedAt time.Time
 	Title string
 	DueDate string
 	Priority string

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -9,6 +10,7 @@ import (
 func validateDueTime(dueTime string) bool {
 
 	_, err := time.Parse("3:04PM", dueTime)
+
 	if err == nil {
 		return true
 	}
@@ -16,22 +18,47 @@ func validateDueTime(dueTime string) bool {
 	return false
 }
 
-func validateDueDate(dueDate string) bool {
-	if dueDate == "today" {
-		return true
+func validateDeadLine(deadline string) (string, error) {
+	deadline = strings.ToLower(deadline)
+
+	if deadline == "today" {
+		return time.Now().Format("2006-01-02"), nil
 	}
-	if dueDate == "tomorrow" {
-		return true
+	if deadline == "tomorrow" {
+		return time.Now().AddDate(0, 0, 1).Format("2006-01-02"), nil
+	}
+	for _, day := range []string{"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"} {
+		if deadline == day {
+			return getNextDayOfWeek(time.Monday).Format("2006-01-02"), nil
+		}
 	}
 
-	_, err := time.Parse("2006-01-02", dueDate)
-	if err == nil {
-		return true
+	date, err := time.Parse("2006-01-02", deadline)
+	if err != nil {
+		return "" , err
 	}
-	fmt.Printf("Error: %s\n", err)
-	return false
+	if date.Before(time.Now()) {
+		return "", fmt.Errorf("Deadline should be greater than now")
+	}else{
+		return date.Format("2006-01-02"), nil
+	}
 }
 
+
+func getNextDayOfWeek(day time.Weekday) time.Time {
+	today := time.Now().Weekday()
+	if today == day {
+		return time.Now().AddDate(0, 0, 7)
+	}
+	if today > day {
+		return time.Now().AddDate(0, 0, 7-int(today-day))
+	}
+	return time.Now().AddDate(0, 0, int(day-today))
+}
+
+
+// valid value for reminder:
+// remind_me_by
 func validateReminder(reminder int, dueTime time.Time) bool {
 	if reminder == 0 {
 		return true
@@ -60,7 +87,7 @@ func ValidateCreateArgs(
 	reminder int,
 ) bool {
 	var parsedDueDate time.Time
-	if !validateDueDate(dueDate) {
+	if !validateDeadLine(dueDate) {
 		return false
 	}
 	if dueDate == "today" || dueDate == "tomorrow" {
