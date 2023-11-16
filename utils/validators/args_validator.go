@@ -2,110 +2,61 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 	"time"
 )
 
-// IsTimeValid checks if a time string is a valid time.
-func validateDueTime(dueTime string) bool {
 
-	_, err := time.Parse("3:04PM", dueTime)
 
-	if err == nil {
-		return true
+func validateDeadLine(deadline time.Time) (bool, error) {
+	if deadline.IsZero() {
+		return false, fmt.Errorf("deadline should not be empty")
 	}
-	fmt.Printf("Error: %s\n", err)
-	return false
-}
-
-func validateDeadLine(deadline string) (string, error) {
-	deadline = strings.ToLower(deadline)
-
-	if deadline == "today" {
-		return time.Now().Format("2006-01-02"), nil
-	}
-	if deadline == "tomorrow" {
-		return time.Now().AddDate(0, 0, 1).Format("2006-01-02"), nil
-	}
-	for _, day := range []string{"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"} {
-		if deadline == day {
-			return getNextDayOfWeek(time.Monday).Format("2006-01-02"), nil
-		}
-	}
-
-	date, err := time.Parse("2006-01-02", deadline)
-	if err != nil {
-		return "" , err
-	}
-	if date.Before(time.Now()) {
-		return "", fmt.Errorf("Deadline should be greater than now")
+	if deadline.Before(time.Now()) {
+		return false, fmt.Errorf("deadline should be in the future")
 	}else{
-		return date.Format("2006-01-02"), nil
+		return true, nil
 	}
 }
 
 
-func getNextDayOfWeek(day time.Weekday) time.Time {
-	today := time.Now().Weekday()
-	if today == day {
-		return time.Now().AddDate(0, 0, 7)
-	}
-	if today > day {
-		return time.Now().AddDate(0, 0, 7-int(today-day))
-	}
-	return time.Now().AddDate(0, 0, int(day-today))
-}
 
 
-// valid value for reminder:
-// remind_me_by
-func validateReminder(reminder int, dueTime time.Time) bool {
-	if reminder == 0 {
-		return true
+func validateReminder(reminder time.Time, deadline time.Time) (bool, error) {
+	// The reminder + the current time should not be greater that the dueTime
+	if reminder.After(deadline) {
+		return false, fmt.Errorf("reminder should be before the deadline")
 	}
-	// The reminder + the current time should not be greatef that the dueTime
-	if time.Now().Add(time.Duration(reminder) * time.Minute).After(dueTime) {
-		return false
-	}
-	return true
+	return true, nil
 
 }
 
-func validatePriority(priority string) bool {
+func validatePriority(priority string) (bool, error) {
 	if priority == "high" || priority == "medium" || priority == "low" {
-		return true
+		return true, nil
 	}
-	return false
+	return false, fmt.Errorf("priority should be high, medium or low")
 }
 
 
 func ValidateCreateArgs(
 	title string,
-	dueDate string,
+	deadline time.Time,
 	priority string,
-	dueTime string,
-	reminder int,
-) bool {
-	var parsedDueDate time.Time
-	if !validateDeadLine(dueDate) {
-		return false
-	}
-	if dueDate == "today" || dueDate == "tomorrow" {
-		parsedDueDate = time.Now()
-	}else{
-		parsedDueDate, _ = time.Parse("2006-01-02", dueDate)
+	remindMe time.Time,
+) (bool, error) {
+
+	if valid, err := validateDeadLine(deadline); !valid  {
+		return false, err
 	}
 
-	if !validateDueTime(dueTime) {
-		return false
+	if !remindMe.IsZero(){
+		if valid, err := validateReminder(remindMe, deadline); !valid {
+			return false, err
+		}
 	}
-	
-	if !validateReminder(reminder, parsedDueDate) {
-		return false
 
+	if valid, err := validatePriority(priority); !valid {
+		return false, err
 	}
-	if !validatePriority(priority) {
-		return false
-	}
-	return true
+	return true, nil
 }
