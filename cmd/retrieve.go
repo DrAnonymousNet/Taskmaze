@@ -1,8 +1,11 @@
 package cmd
 
 import (
-	"github.com/DrAnonymousNet/taskmaze/utils/actions"
+	"fmt"
+
 	"github.com/spf13/cobra"
+
+	"github.com/DrAnonymousNet/taskmaze/utils/actions"
 )
 
 var retrieveTaskCmd = &cobra.Command{
@@ -11,8 +14,13 @@ var retrieveTaskCmd = &cobra.Command{
 	Long:  "Retrieve a task from the list of tasks",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		//id := args[0]
-		actions.Retrieve()
+		id := args[0]
+		task, err := actions.Retrieve(id)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		task.Display()
 	},
 }
 

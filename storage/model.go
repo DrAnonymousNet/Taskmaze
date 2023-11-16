@@ -1,11 +1,8 @@
 package storage
 
 import (
-	"encoding/binary"
 	"fmt"
 	"time"
-
-	"github.com/boltdb/bolt"
 )
 
 type Task struct {
@@ -18,50 +15,54 @@ type Task struct {
 	Done      bool
 }
 
+func (t *Task) Display() {
+	fmt.Println("╔═══════════════════════════════════╗")
+	fmt.Printf("║  Task Details:                    ║\n")
+	fmt.Println("╠═══════════════════════════════════╣")
+	fmt.Printf("║  ID:        %d\n", t.ID)
+	fmt.Printf("║  Title:     %s\n", t.Title)
+	fmt.Printf("║  Due Date:  %s\n", t.Deadline.Format("2006-01-02 by 15:04"))
+	fmt.Printf("║  Priority:  %s\n", t.Priority)
+	fmt.Printf("║  Remind Me: %s\n", t.RemindMe.Format("2006-01-02 by 15:04"))
+	fmt.Printf("║  Completed: %t\n", t.Done)
+	fmt.Println("╚═══════════════════════════════════╝")
+
+}
+
 func (t *Task) serialize() []byte {
-	return []byte(fmt.Sprintf("%d|%s|%s|%s|%s|%t", t.ID, t.CreatedAt, t.Title, t.Deadline, t.Priority, t.Done))
+	deadline := t.Deadline.Format("2006-01-02T15:04:05")
+	remindMe := t.RemindMe.Format("2006-01-02T15:04:05")
+	createdAt := t.CreatedAt.Format("2006-01-02T15:04:05")
+
+	return []byte(fmt.Sprintf("%d %s %s %s %s %s %t", t.ID, createdAt, t.Title, deadline, remindMe, t.Priority, t.Done))
+
 }
 
 func (t *Task) deserialize(data []byte) error {
-	_, err := fmt.Sscanf(string(data), "%d|%s|%s|%s|%s|%t", &t.ID, &t.CreatedAt, &t.Title, &t.Deadline, &t.Priority, &t.Done)
+	var (
+		deadline  string
+		remindMe  string
+		createdAt string
+	)
+	_, err := fmt.Sscanf(string(data), "%d %s %s %s %s %s %t", &t.ID, &createdAt, &t.Title, &deadline, &remindMe, &t.Priority, &t.Done)
 	if err != nil {
-		return err
+		return fmt.Errorf("error deserializing task: %w", err)
 	}
+	t.Deadline, err = time.Parse("2006-01-02T15:04:05", deadline)
+	if err != nil {
+		return fmt.Errorf("error parsing deadline: %w", err)
+	}
+	t.RemindMe, err = time.Parse("2006-01-02T15:04:05", remindMe)
+	if err != nil {
+		return fmt.Errorf("error parsing remind me: %w", err)
+	}
+	t.CreatedAt, err = time.Parse("2006-01-02T15:04:05", createdAt)
+	if err != nil {
+		return fmt.Errorf("error parsing created at: %w", err)
+	}
+
 	return nil
 }
-
-func CreatNewTask(title string, deadline time.Time, priority string, remindMe time.Time) *Task {
-	task := Task{
-
-		CreatedAt: time.Now(),
-		Title:     title,
-		Deadline:  deadline,
-		Priority:  priority,
-		RemindMe:  remindMe,
-		Done:      false,
-	}
-	return &task
-}
-
-func AddTaskToDB(task *Task) (int, error) {
-	MyDB.mu.Lock()
-	defer MyDB.mu.Unlock()
-	err := MyDB.DB.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("Tasks"))
-		id, _ := b.NextSequence()
-		task.ID = int(id)
-		idBytes := make([]byte, 8)
-		binary.BigEndian.PutUint64(idBytes, uint64(id))
-		b.Put(idBytes, task.serialize())  
-		return nil
-	})
-	if err != nil {
-		return -1, fmt.Errorf("error adding task to db: %w", err)
-	}
-	return task.ID, nil
-}
-
-
 
 // func GetTaskByID(id int) (Task, error) {
 // 	TaskDB.mu.Lock()
