@@ -66,3 +66,28 @@ func RetrieveTaskFromDB(id string) (*Task, error) {
 	fmt.Println(task)
 	return &task, nil
 }
+
+
+func DeleteTaskFromDB(id string) error {
+	MyDB.mu.Lock()
+	defer MyDB.mu.Unlock()
+	err := MyDB.DB.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("Tasks"))
+		idBytes := make([]byte, 8)
+		id, _ := strconv.Atoi(id) // Already validated
+		binary.BigEndian.PutUint64(idBytes, uint64(id))
+		data := b.Get(idBytes)
+		if data == nil {
+			return fmt.Errorf("task not found")
+		}
+		err := b.Delete(idBytes)
+		if err != nil {
+			return fmt.Errorf("error deleting task: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("error deleting task from db: %w", err)
+	}
+	return nil
+}

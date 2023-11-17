@@ -18,6 +18,7 @@ var createTaskCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new task",
 	Long:  "Create a new task to be done",
+	Example: `taskMaze create --title "Buy milk" --priority "high" --deadline "today by 3pm" --remind_me "today by 1pm"`,
 	Run: func(cmd *cobra.Command, args []string) {
 		id, err := actions.Create(title, priority, deadline, remind_me)
 		if err != nil {
