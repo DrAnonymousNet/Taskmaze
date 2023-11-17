@@ -33,9 +33,10 @@ func (t *Task) Display() {
 }
 
 func (t *Task) serialize() []byte {
-	deadline := t.Deadline.Format("2006-01-02T15:04:05")
-	remindMe := t.RemindMe.Format("2006-01-02T15:04:05")
-	createdAt := t.CreatedAt.Format("2006-01-02T15:04:05")
+	fmt.Println(t.Deadline.Format(time.RFC3339), "Saved")
+	deadline := t.Deadline.Format(time.RFC3339)
+	remindMe := t.RemindMe.Format(time.RFC3339)
+	createdAt := t.CreatedAt.Format(time.RFC3339)
 
 	return []byte(fmt.Sprintf("%d|%s|%s|%s|%s|%s|%t", t.ID, createdAt, t.Title, deadline, remindMe, t.Priority, t.Done))
 
@@ -52,7 +53,7 @@ func (t *Task) deserialize(data []byte) error {
 	}
 	t.ID = id
 
-	createdAt, err := time.Parse("2006-01-02T15:04:05", string(parts[1]))
+	createdAt, err := time.Parse(time.RFC3339, string(parts[1]))
 	if err != nil {
 		return fmt.Errorf("error parsing created at: %w", err)
 	}
@@ -60,13 +61,13 @@ func (t *Task) deserialize(data []byte) error {
 
 	t.Title = string(parts[2])
 
-	deadline, err := time.Parse("2006-01-02T15:04:05", string(parts[3]))
+	deadline, err := time.Parse(time.RFC3339, string(parts[3]))
 	if err != nil {
 		return fmt.Errorf("error parsing deadline: %w", err)
 	}
 	t.Deadline = deadline
 
-	remindMe, err := time.Parse("2006-01-02T15:04:05", string(parts[4]))
+	remindMe, err := time.Parse(time.RFC3339, string(parts[4]))
 	if err != nil {
 		return fmt.Errorf("error parsing remind me: %w", err)
 	}

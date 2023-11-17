@@ -91,3 +91,32 @@ func DeleteTaskFromDB(id string) error {
 	}
 	return nil
 }
+
+func ListTasksFromDB(query map[string]interface{}) ([]*Task, error){
+	MyDB.mu.Lock()
+	defer MyDB.mu.Unlock()
+	var tasks []*Task
+	err := MyDB.DB.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("Tasks"))
+		c := b.Cursor()
+		for k, v := c.First(); k!= nil; k, v = c.Next() {
+			var task Task
+			err := task.deserialize(v)
+			if err != nil {
+				return fmt.Errorf("error deserializing task: %w", err)
+			}
+			shouldReturn := applyFilters(&task, query)
+			fmt.Println(shouldReturn)
+			if shouldReturn{
+				tasks = append(tasks, &task)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return []*Task{} ,fmt.Errorf("error listing tasks from db: %w", err)
+	}
+	fmt.Println(tasks)
+	return tasks, nil
+}
