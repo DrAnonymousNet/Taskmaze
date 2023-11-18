@@ -25,14 +25,12 @@ func Create(title string, priority string, deadline string, remindMe string) (in
 		if err != nil {
 			return -1 , fmt.Errorf("error parsing deadline: %w", err)
 		}
-		fmt.Println(deadlineTime)
 	}
 	if remindMe != "" {
 		remindMeTime, err = naturaldate.Parse(remindMe, base, naturaldate.WithDirection(naturaldate.Future))
 		if err != nil {
 			return -1,  fmt.Errorf("error parsing remind me: %w", err)
 		}
-		fmt.Println(remindMeTime)
 	}
 
 

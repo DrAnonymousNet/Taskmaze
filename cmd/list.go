@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/DrAnonymousNet/taskmaze/storage"
 	"github.com/DrAnonymousNet/taskmaze/utils"
 	"github.com/DrAnonymousNet/taskmaze/utils/actions"
 )
@@ -46,9 +47,10 @@ var (
 				fmt.Println(err.Error())
 				return
 			}
-			for _, task := range tasks {
-				task.Display()
-			}
+			storage.DisplayManyTasks(tasks)
+			// for _, task := range tasks {
+			// 	task.Display()
+			// }
 		},
 	}
 

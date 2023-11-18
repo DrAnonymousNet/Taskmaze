@@ -31,7 +31,6 @@ func AddTaskToDB(task *Task) (int, error) {
 		task.ID = int(id)
 		idBytes := make([]byte, 8)
 		binary.BigEndian.PutUint64(idBytes, uint64(id))
-		fmt.Println(idBytes)
 		b.Put(idBytes, task.serialize())  
 		return nil
 	})
@@ -63,7 +62,6 @@ func RetrieveTaskFromDB(id string) (*Task, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving task from db: %w", err)
 	}
-	fmt.Println(task)
 	return &task, nil
 }
 
@@ -106,7 +104,6 @@ func ListTasksFromDB(query map[string]interface{}) ([]*Task, error){
 				return fmt.Errorf("error deserializing task: %w", err)
 			}
 			shouldReturn := applyFilters(&task, query)
-			fmt.Println(shouldReturn)
 			if shouldReturn{
 				tasks = append(tasks, &task)
 			}
@@ -117,6 +114,5 @@ func ListTasksFromDB(query map[string]interface{}) ([]*Task, error){
 	if err != nil {
 		return []*Task{} ,fmt.Errorf("error listing tasks from db: %w", err)
 	}
-	fmt.Println(tasks)
 	return tasks, nil
 }

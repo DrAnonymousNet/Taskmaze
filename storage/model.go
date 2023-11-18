@@ -18,19 +18,6 @@ type Task struct {
 	Done      bool
 }
 
-func (t *Task) Display() {
-	fmt.Println("╔═══════════════════════════════════╗")
-	fmt.Printf("║  Task Details:                    ║\n")
-	fmt.Println("╠═══════════════════════════════════╣")
-	fmt.Printf("║  ID:        %d\n", t.ID)
-	fmt.Printf("║  Title:     %s\n", t.Title)
-	fmt.Printf("║  Due Date:  %s\n", t.Deadline.Format("2006-01-02 by 15:04"))
-	fmt.Printf("║  Priority:  %s\n", t.Priority)
-	fmt.Printf("║  Remind Me: %s\n", t.RemindMe.Format("2006-01-02 by 15:04"))
-	fmt.Printf("║  Completed: %t\n", t.Done)
-	fmt.Println("╚═══════════════════════════════════╝")
-
-}
 
 func (t *Task) serialize() []byte {
 	fmt.Println(t.Deadline.Format(time.RFC3339), "Saved")
@@ -83,18 +70,3 @@ func (t *Task) deserialize(data []byte) error {
 
 	return nil
 }
-// func GetTaskByID(id int) (Task, error) {
-// 	TaskDB.mu.Lock()
-// 	defer TaskDB.mu.Unlock()
-// 	task, ok := (*TaskDB.TaskDB)[id]
-// 	if !ok {
-// 		return Task{}, errors.New("Task not found")
-// 	}
-// 	return task, nil
-// }
-
-// func DeleteTask(id int) {
-// 	TaskDB.mu.Lock()
-// 	defer TaskDB.mu.Unlock()
-// 	delete(*TaskDB.TaskDB, id)
-// }

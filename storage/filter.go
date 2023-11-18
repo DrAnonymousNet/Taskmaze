@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/DrAnonymousNet/taskmaze/utils"
@@ -73,29 +72,23 @@ func applyFilters(task *Task, filters map[string]interface{}) bool {
 	for flag, flagValue := range filters {
 		switch flag {
 		case utils.NOT_DONE:
-			fmt.Println("applying not done filter")
 			if !applyNotDoneFilter(task, flagValue.(bool)) {
 				return false
 			}
 		case utils.DONE:
-			fmt.Println("applying done filter")
 			if !applyDoneFilter(task, flagValue.(bool)) {
 				return false
 			}
 		case utils.DUE_TODAY:
-			fmt.Println("applying due today filter")
 			if !applyOverdueTodayFilter(task, flagValue.(bool)) {
 				return false
 			}
 		case utils.DUE_TOMORROW:
-			fmt.Println("applying due tomorrow filter")
 			if !applyOverdueTomorrowFilter(task, flagValue.(bool)) {
 				return false
 			}
 		case utils.MISSED_DEADLINE:
-			fmt.Println("applying missed deadline filter")
 			if !applyMissedDeadLineFilter(task, flagValue.(bool)) {
-				fmt.Println("returning false")
 				return false
 			}
 		case utils.DUE_THIS_WEEK:
@@ -103,7 +96,7 @@ func applyFilters(task *Task, filters map[string]interface{}) bool {
 				return false
 			}
 		case utils.DUE_THIS_MONTH:
-			if !applyDueThisMonthFilter(task, flagValue.(bool)){
+			if !applyDueThisMonthFilter(task, flagValue.(bool)) {
 				return false
 			}
 		}
