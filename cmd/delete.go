@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/DrAnonymousNet/taskmaze/utils/actions"
+	"github.com/DrAnonymousNet/taskmaze/actions"
 )
 
 var (

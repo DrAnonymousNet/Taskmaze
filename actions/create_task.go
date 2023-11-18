@@ -6,7 +6,7 @@ import (
 
 	naturaldate "github.com/DrAnonymousNet/taskmaze/parser"
 	"github.com/DrAnonymousNet/taskmaze/storage"
-	"github.com/DrAnonymousNet/taskmaze/utils/validators"
+	"github.com/DrAnonymousNet/taskmaze/validators"
 )
 
 

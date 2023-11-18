@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/DrAnonymousNet/taskmaze/storage"
-	"github.com/DrAnonymousNet/taskmaze/utils/validators"
+	"github.com/DrAnonymousNet/taskmaze/validators"
 )
 
 func Retrieve(id string) (*storage.Task, error) {

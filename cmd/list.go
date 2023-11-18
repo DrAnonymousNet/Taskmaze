@@ -7,7 +7,7 @@ import (
 
 	"github.com/DrAnonymousNet/taskmaze/storage"
 	"github.com/DrAnonymousNet/taskmaze/utils"
-	"github.com/DrAnonymousNet/taskmaze/utils/actions"
+	"github.com/DrAnonymousNet/taskmaze/actions"
 )
 
 
