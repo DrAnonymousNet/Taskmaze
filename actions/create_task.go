@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	naturaldate "github.com/DrAnonymousNet/taskmaze/parser"
+	"github.com/DrAnonymousNet/taskmaze/parser"
 	"github.com/DrAnonymousNet/taskmaze/storage"
 	"github.com/DrAnonymousNet/taskmaze/validators"
 )
@@ -21,20 +21,20 @@ func Create(title string, priority string, deadline string, remindMe string) (in
 
 
 	if deadline != "" {
-		deadlineTime, err = naturaldate.Parse(deadline, base)
+		deadlineTime, err = parser.Parse(deadline, base)
 		if err != nil {
 			return -1 , fmt.Errorf("error parsing deadline: %w", err)
 		}
 	}
 	if remindMe != "" {
-		remindMeTime, err = naturaldate.Parse(remindMe, base, naturaldate.WithDirection(naturaldate.Future))
+		remindMeTime, err = parser.Parse(remindMe, base, parser.WithDirection(parser.Future))
 		if err != nil {
 			return -1,  fmt.Errorf("error parsing remind me: %w", err)
 		}
 	}
 
-
-	if valid, err := validators.ValidateCreateArgs(title, deadlineTime, priority, remindMeTime); !valid {
+	update := false
+	if valid, err := validators.ValidateCreateArgs(title, deadlineTime, priority, remindMeTime, update); !valid {
 		return -1, fmt.Errorf("error validating arguments: %w", err)
 	}
 	

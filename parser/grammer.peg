@@ -1,4 +1,4 @@
-package naturaldate
+package parser
 
 import "time"
 

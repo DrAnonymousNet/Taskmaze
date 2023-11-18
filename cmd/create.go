@@ -27,7 +27,7 @@ var createTaskCmd = &cobra.Command{
 			fmt.Println("Task created with id: ", id)
 		}
 	},
-	ValidArgs: []string{"title", "due_date", "priority", "time", "reminder"},
+	ValidArgs: []string{"title", "due_date", "priority", "time", "remind_me"},
 }
 
 func init() {
@@ -35,7 +35,7 @@ func init() {
 	createTaskCmd.Flags().StringVarP(&title, "title", "t", "", "Title of the task")
 	createTaskCmd.Flags().StringVarP(&priority, "priority", "p", "", "Priority of the task")
 	createTaskCmd.Flags().StringVarP(&deadline, "deadline", "T", "", "deadline of the task")
-	createTaskCmd.Flags().StringVarP(&remind_me, "remind_me", "r", "", "When you should be remind of the task")
+	createTaskCmd.Flags().StringVarP(&remind_me, "remind-me", "r", "", "When you should be remind of the task")
 	createTaskCmd.MarkFlagRequired("title")
 
 }

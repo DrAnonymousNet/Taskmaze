@@ -24,8 +24,14 @@ func CreatNewTask(title string, deadline time.Time, priority string, remindMe ti
 	return &task
 }
 
-func UpdateTask(task *Task, data map[string]interface{}) {
-	for field, value := range data {
+
+func updateTask(id string, updateData map[string]interface{})(*Task,  error) {
+
+	task, err := RetrieveTaskFromDB(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve task in db: %w", err)
+	}
+	for field, value := range updateData {
 		switch field {
 		case utils.TITLE:
 			task.Title = value.(string)
@@ -39,6 +45,7 @@ func UpdateTask(task *Task, data map[string]interface{}) {
 			task.Done = value.(bool)
 		}
 	}
+	return task, nil
 }
 
 func AddTaskToDB(task *Task) (int, error) {
@@ -59,10 +66,15 @@ func AddTaskToDB(task *Task) (int, error) {
 	return task.ID, nil
 }
 
-func UpdateTaskInDB(task *Task) (int, error) {
+func UpdateTaskInDB(id string, updateData map[string]interface{}) (int, error) {
+	task, err := updateTask(id, updateData)
+	if err != nil{
+		return -1, err
+	}
+
 	MyDB.mu.Lock()
 	defer MyDB.mu.Unlock()
-	err := MyDB.DB.Update(func(tx *bolt.Tx) error {
+	err = MyDB.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("Tasks"))
 		id := task.ID
 		idBytes := make([]byte, 8)
@@ -152,17 +164,14 @@ func ListTasksFromDB(query map[string]interface{}) ([]*Task, error) {
 	return tasks, nil
 }
 
-func MarkTaskAsComplete(id string) error {
-	task, err := RetrieveTaskFromDB(id)
-	if err != nil {
-		return fmt.Errorf("failed to retrieve task in db: %w", err)
-	}
-	UpdateTask(task, map[string]interface{}{utils.DONE_FIELD: true})
-	_, err = UpdateTaskInDB(task)
+
+
+func MarkTaskAsComplete(id string) (int, error) {
+	taskID, err := UpdateTaskInDB(id, map[string]interface{}{utils.DONE_FIELD: true})
 	if err != nil{
-		return fmt.Errorf("failed to update task as complete in db: %w", err)
+		return -1 , fmt.Errorf("failed to update task as complete in db: %w", err)
 	}
-	return nil
+	return taskID, nil
 
 
 }

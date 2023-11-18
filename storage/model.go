@@ -20,7 +20,6 @@ type Task struct {
 
 
 func (t *Task) serialize() []byte {
-	fmt.Println(t.Deadline.Format(time.RFC3339), "Saved")
 	deadline := t.Deadline.Format(time.RFC3339)
 	remindMe := t.RemindMe.Format(time.RFC3339)
 	createdAt := t.CreatedAt.Format(time.RFC3339)

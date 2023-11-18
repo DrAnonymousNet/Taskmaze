@@ -1,7 +1,7 @@
 //go:generate peg -inline -switch grammar.peg
 
 // Package naturaldate provides natural date time parsing.
-package naturaldate
+package parser
 
 import (
 	"strings"
